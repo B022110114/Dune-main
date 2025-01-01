@@ -237,6 +237,21 @@ app.get('/viewUserByAdmin', async (req, res) => {
   }
 });
 
+app.post('/generateToken', async (req, res) => {
+  try {
+      const { user_id, role } = req.body;
+
+      // Assuming you have a user validation function
+      const user = { user_id, role }; // You should fetch the user from DB here based on user_id if needed
+
+      // Call the generateToken function
+      const token = await generateToken(user);
+      res.status(200).json({ token });
+  } catch (error) {
+      res.status(500).json({ message: "Error generating token", error });
+  }
+});
+
 // Start the server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
