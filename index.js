@@ -156,6 +156,36 @@ app.get('/existingUser', async (req, res) => {
   }
 });
 
+app.get('/existingItem', async (req, res) => {
+  try {
+    const { item_id } = req.query;
+    const exists = await existingItem(client, item_id);
+    res.status(200).json({ exists });
+  } catch (error) {
+    res.status(500).send("Error checking existing item");
+  }
+});
+
+app.get('/existingMonster', async (req, res) => {
+  try {
+    const { monster_id } = req.query;
+    const exists = await existingMonster(client, monster_id);
+    res.status(200).json({ exists });
+  } catch (error) {
+    res.status(500).send("Error checking existing monster");
+  }
+});
+
+app.get('/existingWeapon', async (req, res) => {
+  try {
+    const { weapon_id } = req.query;
+    const exists = await existingWeapon(client, weapon_id);
+    res.status(200).json({ exists });
+  } catch (error) {
+    res.status(500).send("Error checking existing weapon");
+  }
+});
+
 // Routes for Other Functions
 app.delete('/deleteUser', async (req, res) => {
   try {
@@ -177,6 +207,16 @@ app.post('/monsterslain', async (req, res) => {
   }
 });
 
+app.get('/reportUser', async (req, res) => {
+  try {
+    const { user_id } = req.query;
+    const report = await reportUser(client, user_id);
+    res.status(200).json(report);
+  } catch (error) {
+    res.status(500).send("Error reporting user");
+  }
+});
+
 // Routes for View Functions
 app.get('/viewLeaderboard', async (req, res) => {
   try {
@@ -184,6 +224,16 @@ app.get('/viewLeaderboard', async (req, res) => {
     res.status(200).json(leaderboard);
   } catch (error) {
     res.status(500).send("Error viewing leaderboard");
+  }
+});
+
+app.get('/viewUserByAdmin', async (req, res) => {
+  try {
+    const { user_id } = req.query;
+    const user = await viewUserByAdmin(client, user_id);
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(500).send("Error viewing user by admin");
   }
 });
 
