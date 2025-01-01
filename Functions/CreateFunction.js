@@ -1,6 +1,6 @@
 const { r } = require("tar");
 
-async function createUser(client, user_id, username, password, email) {
+async function createUser(client, user_id, username, password, email, role = "user") {
     try {
         const database = client.db('TheDune');
         const collection = database.collection('users');
