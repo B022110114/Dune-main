@@ -1,3 +1,5 @@
+const { r } = require("tar");
+
 async function createUser(client, user_id, username, password, email) {
     try {
         const database = client.db('TheDune');
@@ -8,6 +10,7 @@ async function createUser(client, user_id, username, password, email) {
             username: username,
             password: password,
             email: email,
+            role: role,
             registration_date: new Date().toISOString(),
             profile: {
                 level: 1,
