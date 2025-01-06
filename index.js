@@ -73,74 +73,74 @@ run().catch(console.error);
 // API Routes
 
 // User Routes
-app.post('/api/users', async (req, res) => {
+app.post('/users', async (req, res) => {  // createUser function endpoint
   const { user_id, username, password, email, role } = req.body;
   await createUser(client, user_id, username, password, email, role);
   res.status(201).send("User created");
 });
 
-app.get('/api/users/:user_id', async (req, res) => {
+app.get('/users/:user_id', async (req, res) => {  // findUserById function endpoint
   const user = await findUserById(client, req.params.user_id);
   res.status(200).json(user);
 });
 
 // Item Routes
-app.post('/api/items', async (req, res) => {
+app.post('/items', async (req, res) => {  // createItem function endpoint
   const { item_id, name, description, type, attributes, rarity } = req.body;
   await createItem(client, item_id, name, description, type, attributes, rarity);
   res.status(201).send("Item created");
 });
 
-app.get('/api/items/:item_id', async (req, res) => {
+app.get('/items/:item_id', async (req, res) => {  // findItemById function endpoint
   const item = await findItemById(client, req.params.item_id);
   res.status(200).json(item);
 });
 
 // Weapon Routes
-app.post('/api/weapons', async (req, res) => {
+app.post('/weapons', async (req, res) => {  // createWeapon function endpoint
   const { weapon_id, name, description, damage, type, attributes } = req.body;
   await createWeapon(client, weapon_id, name, description, damage, type, attributes);
   res.status(201).send("Weapon created");
 });
 
-app.get('/api/weapons/:weapon_id', async (req, res) => {
+app.get('/weapons/:weapon_id', async (req, res) => {  // findWeaponById function endpoint
   const weapon = await findWeaponById(client, req.params.weapon_id);
   res.status(200).json(weapon);
 });
 
 // Monster Routes
-app.post('/api/monsters', async (req, res) => {
+app.post('/monsters', async (req, res) => {  // createMonster function endpoint
   const { monster_id, name, attributes, location } = req.body;
   await createMonster(client, monster_id, name, attributes, location);
   res.status(201).send("Monster created");
 });
 
-app.get('/api/monsters/:monster_id', async (req, res) => {
+app.get('/monsters/:monster_id', async (req, res) => {  // findMonsterById function endpoint
   const monster = await findMonsterById(client, req.params.monster_id);
   res.status(200).json(monster);
 });
 
 // Transaction Routes
-app.post('/api/transactions', async (req, res) => {
+app.post('/transactions', async (req, res) => {  // createTransaction function endpoint
   const { transaction_id, user_id, item_id, transaction_type, amount, date } = req.body;
   await createTransaction(client, transaction_id, user_id, item_id, transaction_type, amount, date);
   res.status(201).send("Transaction created");
 });
 
 // Leveling Routes (Monsters Slain)
-app.post('/api/users/:user_id/monsterslain/:monster_id', async (req, res) => {
+app.post('/users/:user_id/monsterslain/:monster_id', async (req, res) => {  // monsterslain function endpoint
   const result = await monsterslain(client, req.params.user_id, req.params.monster_id);
   res.status(200).json(result);
 });
 
 // Admin Routes
-app.get('/api/users/:user_id/report', ADMIN, async (req, res) => {
+app.get('/users/:user_id/report', ADMIN, async (req, res) => {  // reportUser function endpoint
   const userReport = await reportUser(client, req.params.user_id);
   res.status(200).json(userReport);
 });
 
 // Leaderboard Route
-app.get('/api/leaderboard', async (req, res) => {
+app.get('/leaderboard', async (req, res) => {  // viewLeaderboard function endpoint
   const leaderboard = await viewLeaderboard(client, req.query.user_id);
   res.status(200).json(leaderboard);
 });
