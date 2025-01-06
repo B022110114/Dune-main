@@ -197,6 +197,18 @@ app.delete('/deleteUser', async (req, res) => {
   }
 });
 
+app.get('/randomMonster', async (req, res) => {
+  try {
+      const database = client.db('TheDune');
+      const monstersCollection = database.collection('monster');
+
+      const monsters = await monstersCollection.aggregate([{ $sample: { size: 1 } }]).toArray();
+      res.status(200).json(monsters[0]);
+  } catch (error) {
+      res.status(500).json({ error: "Error fetching random monster" });
+  }
+});
+
 app.post('/slayMonster', async (req, res) => {
   try {
       const { user_id, monster_id } = req.body;
