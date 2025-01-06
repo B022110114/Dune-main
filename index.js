@@ -197,13 +197,16 @@ app.delete('/deleteUser', async (req, res) => {
   }
 });
 
-app.post('/monsterslain', async (req, res) => {
+app.post('/slayMonster', async (req, res) => {
   try {
-    const { user_id, monster_id } = req.body;
-    const profile = await monsterslain(client, user_id, monster_id);
-    res.status(200).json(profile);
+      const { user_id, monster_id } = req.body;
+
+      // Call the monsterslain function
+      const result = await monsterslain(client, user_id, monster_id);
+
+      res.status(200).json(result);
   } catch (error) {
-    res.status(500).send("Error processing monster slain");
+      res.status(500).json({ error: error.message });
   }
 });
 
