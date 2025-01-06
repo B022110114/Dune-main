@@ -71,27 +71,6 @@ async function createMonster(client, monster_id, name, attributes, location) {
     }
 }
 
-async function createTransaction(client, transaction_id, user_id, item_id, transaction_type, amount, date) {
-    try {
-        const database = client.db('TheDune');
-        const collection = database.collection('transaction');
-
-        const transaction = {
-            transaction_id: transaction_id,
-            user_id: user_id,
-            item_id: item_id,
-            transaction_type: transaction_type,
-            amount: amount,
-            date: date
-        };
-
-        await collection.insertOne(transaction);
-        console.log("Transaction created successfully");
-    } catch (error) {
-        console.error("Error creating transaction:", error);
-    }
-}
-
 async function createWeapon(client, weapon_id, name, description, damage, type, attributes) {
     try {
         const database = client.db('TheDune');
@@ -113,10 +92,31 @@ async function createWeapon(client, weapon_id, name, description, damage, type, 
     }
 }
 
+async function createTransaction(client, transaction_id, user_id, item_id, transaction_type, amount, date) {
+    try {
+        const database = client.db('TheDune');
+        const collection = database.collection('transaction');
+
+        const transaction = {
+            transaction_id: transaction_id,
+            user_id: user_id,
+            item_id: item_id,
+            transaction_type: transaction_type,
+            amount: amount,
+            date: date
+        };
+
+        await collection.insertOne(transaction);
+        console.log("Transaction created successfully");
+    } catch (error) {
+        console.error("Error creating transaction:", error);
+    }
+}
+
 module.exports = {
     createUser,
     createItem,
     createMonster,
-    createTransaction,
-    createWeapon
+    createWeapon,
+    createTransaction
 };
