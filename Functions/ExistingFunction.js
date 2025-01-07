@@ -25,7 +25,7 @@ async function existingItem(client, item_id) {
 async function existingMonster(client, monster_id) {
     try {
         const database = client.db('TheDune');
-        const collection = database.collection('monster');
+        const collection = database.collection('monsters');
 
         const monster = await collection.findOne({ monster_id: monster_id });
         return monster !== null;
