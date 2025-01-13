@@ -1,9 +1,16 @@
 const { r } = require("tar");
+const { existingUser, existingItem, existingMonster, existingWeapon } = require('./ExistingFunction');
 
 async function createUser(client, user_id, username, password, email, role = "user") {
     try {
         const database = client.db('TheDune');
         const collection = database.collection('users');
+
+        // Check if the user already exists
+        const userExists = await existingUser(client, user_id);
+        if (userExists) {
+            throw new Error("User with this ID already exists");
+        }
 
         const user = {
             user_id: user_id,
@@ -28,6 +35,7 @@ async function createUser(client, user_id, username, password, email, role = "us
         console.log("User created successfully");
     } catch (error) {
         console.error("Error creating user:", error);
+        throw error;
     }
 }
 
@@ -35,6 +43,12 @@ async function createItem(client, item_id, name, description, type, attributes, 
     try {
         const database = client.db('TheDune');
         const collection = database.collection('items');
+
+        // Check if the item already exists
+        const itemExists = await existingItem(client, item_id);
+        if (itemExists) {
+            throw new Error("Item with this ID already exists");
+        }
 
         const item = {
             item_id: item_id,
@@ -49,6 +63,7 @@ async function createItem(client, item_id, name, description, type, attributes, 
         console.log("Item created successfully");
     } catch (error) {
         console.error("Error creating item:", error);
+        throw error;
     }
 }
 
@@ -56,6 +71,12 @@ async function createMonster(client, monster_id, name, attributes, location) {
     try {
         const database = client.db('TheDune');
         const collection = database.collection('monster');
+
+        // Check if the monster already exists
+        const monsterExists = await existingMonster(client, monster_id);
+        if (monsterExists) {
+            throw new Error("Monster with this ID already exists");
+        }
 
         const monster = {
             monster_id: monster_id,
@@ -68,27 +89,7 @@ async function createMonster(client, monster_id, name, attributes, location) {
         console.log("Monster created successfully");
     } catch (error) {
         console.error("Error creating monster:", error);
-    }
-}
-
-async function createTransaction(client, transaction_id, user_id, item_id, transaction_type, amount, date) {
-    try {
-        const database = client.db('TheDune');
-        const collection = database.collection('transaction');
-
-        const transaction = {
-            transaction_id: transaction_id,
-            user_id: user_id,
-            item_id: item_id,
-            transaction_type: transaction_type,
-            amount: amount,
-            date: date
-        };
-
-        await collection.insertOne(transaction);
-        console.log("Transaction created successfully");
-    } catch (error) {
-        console.error("Error creating transaction:", error);
+        throw error;
     }
 }
 
@@ -96,6 +97,12 @@ async function createWeapon(client, weapon_id, name, description, damage, type, 
     try {
         const database = client.db('TheDune');
         const collection = database.collection('weapons');
+
+        // Check if the weapon already exists
+        const weaponExists = await existingWeapon(client, weapon_id);
+        if (weaponExists) {
+            throw new Error("Weapon with this ID already exists");
+        }
 
         const weapon = {
             weapon_id: weapon_id,
@@ -110,6 +117,7 @@ async function createWeapon(client, weapon_id, name, description, damage, type, 
         console.log("Weapon created successfully");
     } catch (error) {
         console.error("Error creating weapon:", error);
+        throw error;
     }
 }
 
@@ -117,6 +125,5 @@ module.exports = {
     createUser,
     createItem,
     createMonster,
-    createTransaction,
     createWeapon
 };

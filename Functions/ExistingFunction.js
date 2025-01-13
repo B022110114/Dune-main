@@ -7,6 +7,7 @@ async function existingUser(client, user_id) {
         return user !== null;
     } catch (error) {
         console.error("Error checking existing user:", error);
+        throw error;
     }
 }
 
@@ -19,18 +20,20 @@ async function existingItem(client, item_id) {
         return item !== null;
     } catch (error) {
         console.error("Error checking existing item:", error);
+        throw error;
     }
 }
 
 async function existingMonster(client, monster_id) {
     try {
         const database = client.db('TheDune');
-        const collection = database.collection('monsters');
+        const collection = database.collection('monster');
 
         const monster = await collection.findOne({ monster_id: monster_id });
         return monster !== null;
     } catch (error) {
         console.error("Error checking existing monster:", error);
+        throw error;
     }
 }
 
@@ -43,6 +46,7 @@ async function existingWeapon(client, weapon_id) {
         return weapon !== null;
     } catch (error) {
         console.error("Error checking existing weapon:", error);
+        throw error;
     }
 }
 

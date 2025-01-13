@@ -73,201 +73,314 @@ async function run() {
 }
 run().catch(console.dir);
 
-// Routes for Create Functions
+/**
+ * --- Users CRUD ---
+ */
+
+// Create User
 app.post('/createUser', async (req, res) => {
   try {
-    const { user_id, username, password, email } = req.body;
-    await createUser(client, user_id, username, password, email);
-    res.status(201).send("User created successfully");
+      const { user_id, username, password, email } = req.body;
+      await createUser(client, user_id, username, password, email);
+      res.status(201).send("User created successfully");
   } catch (error) {
-    res.status(500).send("Error creating user");
+      res.status(400).send(error.message); 
   }
 });
 
+// Read User
+app.get('/getUser/:user_id', async (req, res) => {
+  try {
+      const userId = req.params.user_id;
+      const database = client.db('TheDune');
+      const collection = database.collection('users');
+      const user = await collection.findOne({ user_id: userId });
+      
+      if (!user) {
+          return res.status(404).send("User not found");
+      }
+      res.status(200).json(user);
+  } catch (error) {
+      res.status(500).send(error.message);
+  }
+});
+
+// Update User
+app.put('/updateUser/:user_id', async (req, res) => {
+  try {
+      const userId = req.params.user_id;
+      const { username, password, email } = req.body;
+      
+      const database = client.db('TheDune');
+      const collection = database.collection('users');
+      
+      const updateResult = await collection.updateOne(
+          { user_id: userId },
+          { $set: { username, password, email } }
+      );
+
+      if (updateResult.matchedCount === 0) {
+          return res.status(404).send("User not found");
+      }
+
+      res.status(200).send("User updated successfully");
+  } catch (error) {
+      res.status(500).send(error.message);
+  }
+});
+
+// Delete User
+app.delete('/deleteUser/:user_id', async (req, res) => {
+  try {
+      const userId = req.params.user_id;
+      
+      const database = client.db('TheDune');
+      const collection = database.collection('users');
+      
+      const deleteResult = await collection.deleteOne({ user_id: userId });
+      
+      if (deleteResult.deletedCount === 0) {
+          return res.status(404).send("User not found");
+      }
+
+      res.status(200).send("User deleted successfully");
+  } catch (error) {
+      res.status(500).send(error.message);
+  }
+});
+
+/**
+* --- Items CRUD ---
+*/
+
+// Create Item
 app.post('/createItem', async (req, res) => {
   try {
-    const { item_id, name, description, type, attributes, rarity } = req.body;
-    await createItem(client, item_id, name, description, type, attributes, rarity);
-    res.status(201).send("Item created successfully");
+      const { item_id, name, description, type, attributes, rarity } = req.body;
+      await createItem(client, item_id, name, description, type, attributes, rarity);
+      res.status(201).send("Item created successfully");
   } catch (error) {
-    res.status(500).send("Error creating item");
+      res.status(400).send(error.message); 
   }
 });
 
+// Read Item
+app.get('/getItem/:item_id', async (req, res) => {
+  try {
+      const itemId = req.params.item_id;
+      const database = client.db('TheDune');
+      const collection = database.collection('items');
+      const item = await collection.findOne({ item_id: itemId });
+
+      if (!item) {
+          return res.status(404).send("Item not found");
+      }
+
+      res.status(200).json(item);
+  } catch (error) {
+      res.status(500).send(error.message);
+  }
+});
+
+// Update Item
+app.put('/updateItem/:item_id', async (req, res) => {
+  try {
+      const itemId = req.params.item_id;
+      const { name, description, type, attributes, rarity } = req.body;
+
+      const database = client.db('TheDune');
+      const collection = database.collection('items');
+
+      const updateResult = await collection.updateOne(
+          { item_id: itemId },
+          { $set: { name, description, type, attributes, rarity } }
+      );
+
+      if (updateResult.matchedCount === 0) {
+          return res.status(404).send("Item not found");
+      }
+
+      res.status(200).send("Item updated successfully");
+  } catch (error) {
+      res.status(500).send(error.message);
+  }
+});
+
+// Delete Item
+app.delete('/deleteItem/:item_id', async (req, res) => {
+  try {
+      const itemId = req.params.item_id;
+      
+      const database = client.db('TheDune');
+      const collection = database.collection('items');
+      
+      const deleteResult = await collection.deleteOne({ item_id: itemId });
+      
+      if (deleteResult.deletedCount === 0) {
+          return res.status(404).send("Item not found");
+      }
+
+      res.status(200).send("Item deleted successfully");
+  } catch (error) {
+      res.status(500).send(error.message);
+  }
+});
+
+/**
+* --- Monsters CRUD ---
+*/
+
+// Create Monster
 app.post('/createMonster', async (req, res) => {
   try {
-    const { monster_id, name, attributes, location } = req.body;
-    await createMonster(client, monster_id, name, attributes, location);
-    res.status(201).send("Monster created successfully");
+      const { monster_id, name, attributes, location } = req.body;
+      await createMonster(client, monster_id, name, attributes, location);
+      res.status(201).send("Monster created successfully");
   } catch (error) {
-    res.status(500).send("Error creating monster");
+      res.status(400).send(error.message); 
   }
 });
 
-app.post('/createTransaction', async (req, res) => {
+// Read Monster
+app.get('/getMonster/:monster_id', async (req, res) => {
   try {
-    const { transaction_id, user_id, item_id, transaction_type, amount, date } = req.body;
-    await createTransaction(client, transaction_id, user_id, item_id, transaction_type, amount, date);
-    res.status(201).send("Transaction created successfully");
+      const monsterId = req.params.monster_id;
+      const database = client.db('TheDune');
+      const collection = database.collection('monster');
+      const monster = await collection.findOne({ monster_id: monsterId });
+
+      if (!monster) {
+          return res.status(404).send("Monster not found");
+      }
+
+      res.status(200).json(monster);
   } catch (error) {
-    res.status(500).send("Error creating transaction");
+      res.status(500).send(error.message);
   }
 });
 
+// Update Monster
+app.put('/updateMonster/:monster_id', async (req, res) => {
+  try {
+      const monsterId = req.params.monster_id;
+      const { name, attributes, location } = req.body;
+
+      const database = client.db('TheDune');
+      const collection = database.collection('monster');
+
+      const updateResult = await collection.updateOne(
+          { monster_id: monsterId },
+          { $set: { name, attributes, location } }
+      );
+
+      if (updateResult.matchedCount === 0) {
+          return res.status(404).send("Monster not found");
+      }
+
+      res.status(200).send("Monster updated successfully");
+  } catch (error) {
+      res.status(500).send(error.message);
+  }
+});
+
+// Delete Monster
+app.delete('/deleteMonster/:monster_id', async (req, res) => {
+  try {
+      const monsterId = req.params.monster_id;
+      
+      const database = client.db('TheDune');
+      const collection = database.collection('monster');
+      
+      const deleteResult = await collection.deleteOne({ monster_id: monsterId });
+      
+      if (deleteResult.deletedCount === 0) {
+          return res.status(404).send("Monster not found");
+      }
+
+      res.status(200).send("Monster deleted successfully");
+  } catch (error) {
+      res.status(500).send(error.message);
+  }
+});
+
+/**
+* --- Weapons CRUD ---
+*/
+
+// Create Weapon
 app.post('/createWeapon', async (req, res) => {
   try {
-    const { weapon_id, name, description, damage, type, attributes } = req.body;
-    await createWeapon(client, weapon_id, name, description, damage, type, attributes);
-    res.status(201).send("Weapon created successfully");
+      const { weapon_id, name, description, damage, type, attributes } = req.body;
+      await createWeapon(client, weapon_id, name, description, damage, type, attributes);
+      res.status(201).send("Weapon created successfully");
   } catch (error) {
-    res.status(500).send("Error creating weapon");
+      res.status(400).send(error.message); 
   }
 });
 
-// Routes for Find Functions
-app.get('/findUserByUsername', async (req, res) => {
+// Read Weapon
+app.get('/getWeapon/:weapon_id', async (req, res) => {
   try {
-    const { username } = req.query;
-    const user = await findUserByUsername(client, username);
-    res.status(200).json(user);
-  } catch (error) {
-    res.status(500).send("Error finding user by username");
-  }
-});
-
-app.get('/findUserById', async (req, res) => {
-  try {
-    const { user_id } = req.query;
-    const user = await findUserById(client, user_id);
-    res.status(200).json(user);
-  } catch (error) {
-    res.status(500).send("Error finding user by ID");
-  }
-});
-
-// Routes for Existing Functions
-app.get('/existingUser', async (req, res) => {
-  try {
-    const { user_id } = req.query;
-    const exists = await existingUser(client, user_id);
-    res.status(200).json({ exists });
-  } catch (error) {
-    res.status(500).send("Error checking existing user");
-  }
-});
-
-app.get('/existingItem', async (req, res) => {
-  try {
-    const { item_id } = req.query;
-    const exists = await existingItem(client, item_id);
-    res.status(200).json({ exists });
-  } catch (error) {
-    res.status(500).send("Error checking existing item");
-  }
-});
-
-app.get('/existingMonster', async (req, res) => {
-  try {
-    const { monster_id } = req.query;
-    const exists = await existingMonster(client, monster_id);
-    res.status(200).json({ exists });
-  } catch (error) {
-    res.status(500).send("Error checking existing monster");
-  }
-});
-
-app.get('/existingWeapon', async (req, res) => {
-  try {
-    const { weapon_id } = req.query;
-    const exists = await existingWeapon(client, weapon_id);
-    res.status(200).json({ exists });
-  } catch (error) {
-    res.status(500).send("Error checking existing weapon");
-  }
-});
-
-// Routes for Other Functions
-app.delete('/deleteUser', async (req, res) => {
-  try {
-    const { user_id } = req.body;
-    await deleteUser(client, user_id);
-    res.status(200).send("User deleted successfully");
-  } catch (error) {
-    res.status(500).send("Error deleting user");
-  }
-});
-
-app.get('/randomMonster', async (req, res) => {
-  try {
+      const weaponId = req.params.weapon_id;
       const database = client.db('TheDune');
-      const monstersCollection = database.collection('monster');
+      const collection = database.collection('weapons');
+      const weapon = await collection.findOne({ weapon_id: weaponId });
 
-      const monsters = await monstersCollection.aggregate([{ $sample: { size: 1 } }]).toArray();
-      res.status(200).json(monsters[0]);
+      if (!weapon) {
+          return res.status(404).send("Weapon not found");
+      }
+
+      res.status(200).json(weapon);
   } catch (error) {
-      res.status(500).json({ error: "Error fetching random monster" });
+      res.status(500).send(error.message);
   }
 });
 
-app.post('/slayMonster', async (req, res) => {
+// Update Weapon
+app.put('/updateWeapon/:weapon_id', async (req, res) => {
   try {
-      const { user_id, monster_id } = req.body;
+      const weaponId = req.params.weapon_id;
+      const { name, description, damage, type, attributes } = req.body;
 
-      // Call the monsterslain function
-      const result = await monsterslain(client, user_id, monster_id);
+      const database = client.db('TheDune');
+      const collection = database.collection('weapons');
 
-      res.status(200).json(result);
+      const updateResult = await collection.updateOne(
+          { weapon_id: weaponId },
+          { $set: { name, description, damage, type, attributes } }
+      );
+
+      if (updateResult.matchedCount === 0) {
+          return res.status(404).send("Weapon not found");
+      }
+
+      res.status(200).send("Weapon updated successfully");
   } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).send(error.message);
   }
 });
 
-app.get('/reportUser', async (req, res) => {
+// Delete Weapon
+app.delete('/deleteWeapon/:weapon_id', async (req, res) => {
   try {
-    const { user_id } = req.query;
-    const report = await reportUser(client, user_id);
-    res.status(200).json(report);
+      const weaponId = req.params.weapon_id;
+      
+      const database = client.db('TheDune');
+      const collection = database.collection('weapons');
+      
+      const deleteResult = await collection.deleteOne({ weapon_id: weaponId });
+      
+      if (deleteResult.deletedCount === 0) {
+          return res.status(404).send("Weapon not found");
+      }
+
+      res.status(200).send("Weapon deleted successfully");
   } catch (error) {
-    res.status(500).send("Error reporting user");
+      res.status(500).send(error.message);
   }
 });
 
-// Routes for View Functions
-app.get('/viewLeaderboard', async (req, res) => {
-  try {
-    const leaderboard = await viewLeaderboard(client);
-    res.status(200).json(leaderboard);
-  } catch (error) {
-    res.status(500).send("Error viewing leaderboard");
-  }
-});
-
-app.get('/viewUserByAdmin', async (req, res) => {
-  try {
-    const { user_id } = req.query;
-    const user = await viewUserByAdmin(client, user_id);
-    res.status(200).json(user);
-  } catch (error) {
-    res.status(500).send("Error viewing user by admin");
-  }
-});
-
-app.post('/generateToken', async (req, res) => {
-  try {
-      const { user_id, role } = req.body;
-
-      // Assuming you have a user validation function
-      const user = { user_id, role }; // You should fetch the user from DB here based on user_id if needed
-
-      // Call the generateToken function
-      const token = await generateToken(user);
-      res.status(200).json({ token });
-  } catch (error) {
-      res.status(500).json({ message: "Error generating token", error });
-  }
-});
-
-// Start the server
+// Server start
 app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+  console.log(`Server is running on http://localhost:${port}`);
 });
