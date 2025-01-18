@@ -160,21 +160,25 @@ app.put('/updateUser/:username', async (req, res) => {
 // Delete User
 app.delete('/deleteUser/:username', async (req, res) => {
   try {
-      const userId = req.params.username;
+      const username = req.params.username; // Use the correct parameter from the request
+      console.log("Username to delete:", username); // Debugging log
       
       const database = client.db('TheDune');
       const collection = database.collection('users');
       
+      // Attempt to delete the user with the given username
       const deleteResult = await collection.deleteOne({ username: username });
       
+      // Check if a document was deleted
       if (deleteResult.deletedCount === 0) {
           return res.status(404).send("User not found");
       }
 
       res.status(200).send("User deleted successfully");
   } catch (error) {
+      console.error("Error deleting user:", error); // Log error for debugging
       res.status(500).send(error.message);
-  }
+  }
 });
 
 /**
