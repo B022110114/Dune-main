@@ -80,8 +80,8 @@ run().catch(console.dir);
 // Create User
 app.post('/createUser', async (req, res) => {
   try {
-      const { user_id, username, password, email } = req.body;
-      await createUser(client, user_id, username, password, email);
+      const { username, password, email } = req.body;
+      await createUser(client, username, password, email);
       res.status(201).send("User created successfully");
   } catch (error) {
       res.status(400).send(error.message); 
@@ -89,13 +89,13 @@ app.post('/createUser', async (req, res) => {
 });
 
 // Read User
-app.get('/getUser/:user_id', async (req, res) => {
+app.get('/getUser/:username', async (req, res) => {
   try {
-      const userId = req.params.user_id;
+      const username = req.params.username; // Use the correct variable for the parameter
       const database = client.db('TheDune');
       const collection = database.collection('users');
-      const user = await collection.findOne({ user_id: userId });
-      
+      const user = await collection.findOne({ username }); // Query by username
+
       if (!user) {
           return res.status(404).send("User not found");
       }
@@ -106,16 +106,16 @@ app.get('/getUser/:user_id', async (req, res) => {
 });
 
 // Update User
-app.put('/updateUser/:user_id', async (req, res) => {
+app.put('/updateUser/:username', async (req, res) => {
   try {
-      const userId = req.params.user_id;
+      const userId = req.params.username;
       const { username, password, email } = req.body;
       
       const database = client.db('TheDune');
       const collection = database.collection('users');
       
       const updateResult = await collection.updateOne(
-          { user_id: userId },
+          { username: username },
           { $set: { username, password, email } }
       );
 
@@ -130,14 +130,14 @@ app.put('/updateUser/:user_id', async (req, res) => {
 });
 
 // Delete User
-app.delete('/deleteUser/:user_id', async (req, res) => {
+app.delete('/deleteUser/:username', async (req, res) => {
   try {
-      const userId = req.params.user_id;
+      const userId = req.params.username;
       
       const database = client.db('TheDune');
       const collection = database.collection('users');
       
-      const deleteResult = await collection.deleteOne({ user_id: userId });
+      const deleteResult = await collection.deleteOne({ username: username });
       
       if (deleteResult.deletedCount === 0) {
           return res.status(404).send("User not found");

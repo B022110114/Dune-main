@@ -1,19 +1,29 @@
 const { r } = require("tar");
 const { existingUser, existingItem, existingMonster, existingWeapon } = require('./ExistingFunction');
 
-async function createUser(client, user_id, username, password, email, role = "user") {
+async function createUser(client, username, password, email, role = "user") {
     try {
+        // Check for missing inputs
+        if (!username) {
+            throw new Error("Username is required. Please provide a username.");
+        }
+        if (!password) {
+            throw new Error("Password is required. Please provide a password.");
+        }
+        if (!email) {
+            throw new Error("Email is required. Please provide an email address.");
+        }
+
         const database = client.db('TheDune');
         const collection = database.collection('users');
 
         // Check if the user already exists
-        const userExists = await existingUser(client, user_id);
+        const userExists = await existingUser(client, username);
         if (userExists) {
-            throw new Error("User with this ID already exists");
+            throw new Error("User already exists");
         }
 
         const user = {
-            user_id: user_id,
             username: username,
             password: password,
             email: email,
@@ -34,8 +44,8 @@ async function createUser(client, user_id, username, password, email, role = "us
         await collection.insertOne(user);
         console.log("User created successfully");
     } catch (error) {
-        console.error("Error creating user:", error);
-        throw error;
+        console.error("Error creating user:", error.message);
+        throw error; // You can re-throw the error if needed to handle it upstream
     }
 }
 

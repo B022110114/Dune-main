@@ -1,4 +1,4 @@
-async function viewLeaderboard(client, user_id) {
+async function viewLeaderboard(client, username) {
     try {
         const database = client.db('TheDune');
         const usersCollection = database.collection('users');
@@ -15,7 +15,7 @@ async function viewUserByAdmin(client, user_id) {
         const database = client.db('TheDune');
         const collection = database.collection('users');
 
-        const user = await collection.findOne({ user_id: user_id });
+        const user = await collection.findOne({ username: username});
         if (user) {
             return user;
         } else {

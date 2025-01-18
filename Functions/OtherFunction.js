@@ -5,7 +5,7 @@ async function monsterslain(client, user_id, monster_id) {
         const monstersCollection = database.collection('monster');
 
         // Fetch the user and monster details
-        const user = await usersCollection.findOne({ user_id: user_id });
+        const user = await usersCollection.findOne({ username: username });
         const monster = await monstersCollection.findOne({ monster_id: monster_id });
 
         if (!user) {
@@ -39,7 +39,7 @@ async function monsterslain(client, user_id, monster_id) {
 
         // Update user in the database
         await usersCollection.updateOne(
-            { user_id: user_id },
+            { username: username },
             { $set: { profile: user.profile } }
         );
 
@@ -56,45 +56,22 @@ async function monsterslain(client, user_id, monster_id) {
 
 module.exports = {
     monsterslain,
-    deleteUser,
-    reportUser
+    deleteUser
 };
 
-async function deleteUser(client, user_id) {
+async function deleteUser(client, username) {
     try {
         const database = client.db('TheDune');
         const collection = database.collection('users');
 
-        await collection.deleteOne({ user_id: user_id });
+        await collection.deleteOne({ username: username });
         console.log("User deleted successfully");
     } catch (error) {
         console.error("Error deleting user:", error);
     }
 }
 
-async function reportUser(client, user_id) {
-    try {
-        const database = client.db('TheDune');
-        const collection = database.collection('users');
-
-        const user = await collection.findOne({ user_id: user_id });
-        if (user) {
-            return {
-                user_id: user.user_id,
-                username: user.username,
-                email: user.email,
-                profile: user.profile
-            };
-        } else {
-            throw new Error('User not found');
-        }
-    } catch (error) {
-        console.error("Error reporting user:", error);
-    }
-}
-
 module.exports = {
     monsterslain,
-    deleteUser,
-    reportUser
+    deleteUser
 };

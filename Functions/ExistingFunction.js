@@ -1,9 +1,9 @@
-async function existingUser(client, user_id) {
+async function existingUser(client, username) {
     try {
         const database = client.db('TheDune');
         const collection = database.collection('users');
 
-        const user = await collection.findOne({ user_id: user_id });
+        const user = await collection.findOne({ username: username });
         return user !== null;
     } catch (error) {
         console.error("Error checking existing user:", error);
