@@ -108,22 +108,50 @@ app.get('/getUser/:username', async (req, res) => {
 // Update User
 app.put('/updateUser/:username', async (req, res) => {
   try {
-      const userId = req.params.username;
-      const { username, password, email } = req.body;
+      const username = req.params.username; // Get the username from the URL params
+      const { password, email } = req.body; // Get the updated values from the request body
       
       const database = client.db('TheDune');
       const collection = database.collection('users');
       
+      // Find the existing user
+      const user = await collection.findOne({ username: username });
+
+      // Check if user exists
+      if (!user) {
+          return res.status(404).send("User not found");
+      }
+
+      // Track if any field has been updated
+      let updateData = {};
+      
+      // Only update if the password or email are different
+      if (password && password !== user.password) {
+          updateData.password = password; // Only update password if different
+      }
+
+      if (email && email !== user.email) {
+          updateData.email = email; // Only update email if different
+      }
+
+      // If no actual changes were made, respond with an appropriate message
+      if (Object.keys(updateData).length === 0) {
+          return res.status(400).send("No changes detected");
+      }
+
+      // Perform the update if any changes are detected
       const updateResult = await collection.updateOne(
-          { username: username },
-          { $set: { username, password, email } }
+          { username: username }, // Find user by username
+          { $set: updateData } // Update the fields that have changed
       );
 
+      // Check if any document was actually updated
       if (updateResult.matchedCount === 0) {
           return res.status(404).send("User not found");
       }
 
       res.status(200).send("User updated successfully");
+
   } catch (error) {
       res.status(500).send(error.message);
   }
