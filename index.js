@@ -189,11 +189,22 @@ app.delete('/deleteUser/:username', async (req, res) => {
 app.post('/createItem', async (req, res) => {
   try {
       const { item_id, name, description, type, attributes, rarity } = req.body;
+
+      // Log the request body to debug
+      console.log("Request Body:", req.body);
+
+      // Validate input to prevent empty inserts
+      if (!item_id || !name || !description || !type || !rarity || !attributes) {
+          return res.status(400).json({ error: "All fields are required" });
+      }
+
+      // Call createItem function with validated inputs
       await createItem(client, item_id, name, description, type, attributes, rarity);
-      res.status(201).send("Item created successfully");
+      res.status(201).json({ message: "Item created successfully" });
+
   } catch (error) {
-      res.status(400).send(error.message); 
-  }
+      res.status(500).json({ error: error.message });
+    }
 });
 
 // Read Item
@@ -266,11 +277,22 @@ app.delete('/deleteItem/:item_id', async (req, res) => {
 app.post('/createMonster', async (req, res) => {
   try {
       const { monster_id, name, attributes, location } = req.body;
+
+      // Log the request body to debug
+      console.log("Request Body:", req.body);
+
+      // Validate input to prevent empty inserts
+      if (!monster_id || !name || !attributes || !location) {
+          return res.status(400).json({ error: "All fields are required" });
+      }
+
+      // Call createMonster function with validated inputs
       await createMonster(client, monster_id, name, attributes, location);
-      res.status(201).send("Monster created successfully");
+      res.status(201).json({ message: "Monster created successfully" });
+
   } catch (error) {
-      res.status(400).send(error.message); 
-  }
+      res.status(500).json({ error: error.message });
+    }
 });
 
 // Read Monster
