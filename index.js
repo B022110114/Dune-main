@@ -88,6 +88,16 @@ app.post('/createUser', async (req, res) => {
   }
 });
 
+app.get('/generate-token', async (req, res) => {
+  try {
+    const adminUser = { user_id: 1, role: 'admin' }; // Simulate an admin user
+    const token = await generateToken(adminUser);
+    res.json({ token });
+  } catch (error) {
+    res.status(500).send('Error generating token');
+  }
+});
+
 // Read User
 app.get('/getUser/:username', async (req, res) => {
   try {
@@ -179,6 +189,10 @@ app.delete('/deleteUser/:username', async (req, res) => {
       console.error("Error deleting user:", error); // Log error for debugging
       res.status(500).send(error.message);
   }
+});
+
+app.get('/admin-only', ADMIN, (req, res) => {
+  res.send("Welcome, admin!");
 });
 
 /**
