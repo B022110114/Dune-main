@@ -1,19 +1,23 @@
-async function monsterslain(client, user_id, monster_id) {
+async function slayRandomMonster(client, username) {
     try {
         const database = client.db('TheDune');
         const usersCollection = database.collection('users');
         const monstersCollection = database.collection('monster');
 
-        // Fetch the user and monster details
+        // Fetch the user
         const user = await usersCollection.findOne({ username: username });
-        const monster = await monstersCollection.findOne({ monster_id: monster_id });
 
         if (!user) {
             throw new Error('User not found');
         }
-        if (!monster) {
-            throw new Error('Monster not found');
+
+        // Fetch all monsters and select one randomly
+        const monsters = await monstersCollection.find({}).toArray();
+        if (monsters.length === 0) {
+            throw new Error('No monsters available');
         }
+
+        const randomMonster = monsters[Math.floor(Math.random() * monsters.length)];
 
         // Define points by monster rarity
         const rarityPoints = {
@@ -23,13 +27,13 @@ async function monsterslain(client, user_id, monster_id) {
             legendary: 100,
         };
 
-        const rarity = monster.attributes.rarity || 'common'; // Default to 'common' if rarity not specified
+        const rarity = randomMonster.attributes.rarity || 'common'; // Default to 'common' if rarity not specified
         const points = rarityPoints[rarity] || 10; // Default to 'common' points if no rarity match
 
         // Add points to user's experience
         user.profile.experience += points;
 
-        // Check for level-up logic (optional)
+        // Check for level-up logic
         const levelUpThreshold = user.profile.level * 100; // Example: 100 experience points per level
         if (user.profile.experience >= levelUpThreshold) {
             user.profile.level += 1;
@@ -44,18 +48,18 @@ async function monsterslain(client, user_id, monster_id) {
         );
 
         return {
-            message: `${user.username} slayed ${monster.name} and earned ${points} experience points!`,
+            message: `${user.username} slayed ${randomMonster.name} and earned ${points} experience points!`,
             new_experience: user.profile.experience,
             level: user.profile.level,
         };
     } catch (error) {
-        console.error("Error in monsterslain:", error);
+        console.error("Error in slayRandomMonster:", error);
         throw error;
     }
 }
 
 module.exports = {
-    monsterslain,
+    slayRandomMonster,
     deleteUser
 };
 
@@ -72,6 +76,6 @@ async function deleteUser(client, username) {
 }
 
 module.exports = {
-    monsterslain,
+    slayRandomMonster,
     deleteUser
 };
