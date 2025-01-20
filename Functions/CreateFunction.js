@@ -1,5 +1,6 @@
 const { r } = require("tar");
 const { existingUser, existingItem, existingMonster, existingWeapon } = require('./ExistingFunction');
+const bcrypt = require('bcrypt');
 
 async function createUser(client, username, password, email, role = "user") {
     try {
@@ -23,9 +24,15 @@ async function createUser(client, username, password, email, role = "user") {
             throw new Error("User already exists");
         }
 
+        // Hash the password
+        const salt = await bcrypt.genSalt(10); // Generate a salt
+        const hashedPassword = await bcrypt.hash(password, salt); // Hash the password
+
+        console.log("Hashed password:", hashedPassword);
+
         const user = {
             username: username,
-            password: password,
+            password: hashedPassword, // Store the hashed password
             email: email,
             role: role,
             registration_date: new Date().toISOString(),
@@ -45,7 +52,7 @@ async function createUser(client, username, password, email, role = "user") {
         console.log("User created successfully");
     } catch (error) {
         console.error("Error creating user:", error.message);
-        throw error; // You can re-throw the error if needed to handle it upstream
+        throw error; // Re-throw the error to be handled by the calling function
     }
 }
 

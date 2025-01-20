@@ -5,7 +5,6 @@ const port = process.env.PORT || 3001;
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const cors = require('cors');
 
 // Import functions
 const {
@@ -33,6 +32,7 @@ const {
 } = require('./Functions/TokenFunction');
 
 const {
+  loginUser,
   slayRandomMonster,
   deleteUser,
 } = require('./Functions/OtherFunction');
@@ -77,6 +77,16 @@ app.post('/createUser', async (req, res) => {
       const { username, password, email } = req.body;
       await createUser(client, username, password, email);
       res.status(201).send("User created successfully");
+  } catch (error) {
+      res.status(400).send(error.message); 
+  }
+});
+
+app.post('/login', async (req, res) => {
+  try {
+      const { username, password } = req.body;
+      const userData = await loginUser(client, username, password);
+      res.status(200).json({ message: "Login successful", user: userData });
   } catch (error) {
       res.status(400).send(error.message); 
   }

@@ -1,3 +1,40 @@
+const bcrypt = require('bcrypt');
+
+async function loginUser(client, username, password) {
+    try {
+        // Check for missing inputs
+        if (!username) {
+            throw new Error("Username is required. Please provide a username.");
+        }
+        if (!password) {
+            throw new Error("Password is required. Please provide a password.");
+        }
+
+        const database = client.db('TheDune');
+        const collection = database.collection('users');
+
+        // Find the user by username
+        const user = await collection.findOne({ username: username });
+        if (!user) {
+            throw new Error("User not found. Please check your username.");
+        }
+
+        // Compare the hashed password with the entered password
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            throw new Error("Incorrect password. Please try again.");
+        }
+
+        // If login is successful, return user data (you can also create a session or token here)
+        console.log("Login successful");
+        return { username: user.username, email: user.email, role: user.role, profile: user.profile };
+
+    } catch (error) {
+        console.error("Error logging in:", error.message);
+        throw error; // Re-throw the error to be handled by the calling function
+    }
+}
+
 async function slayRandomMonster(client, username) {
     try {
         const database = client.db('TheDune');
@@ -99,6 +136,7 @@ async function deleteUser(client, username) {
 }
 
 module.exports = {
+    loginUser,
     slayRandomMonster,
     deleteUser
 };
