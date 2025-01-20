@@ -77,8 +77,7 @@ async function slayRandomMonster(client, username) {
         // Check for level-up logic
         const levelUpThreshold = user.level * 100; // Example: 100 experience points per level
         if (user.experience >= levelUpThreshold) {
-            user.level += 1;
-            user.experience -= levelUpThreshold; // Carry over remaining experience
+            user.level += 1;  // Increment the level
             console.log(`User leveled up to Level ${user.level}`);
         }
 
