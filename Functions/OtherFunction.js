@@ -11,6 +11,22 @@ async function slayRandomMonster(client, username) {
             throw new Error('User not found');
         }
 
+        // Make sure the user profile has experience field initialized
+        if (!user.profile) {
+            user.profile = {
+                experience: 0,
+                level: 1,
+                strength: 0,
+                dexterity: 0,
+                intelligence: 0,
+                inventory: []
+            };
+        }
+
+        // Convert experience and level to plain JavaScript numbers if necessary
+        user.profile.experience = Number(user.profile.experience);
+        user.profile.level = Number(user.profile.level);
+
         // Fetch all monsters and select one randomly
         const monsters = await monstersCollection.find({}).toArray();
         if (monsters.length === 0) {
@@ -41,27 +57,34 @@ async function slayRandomMonster(client, username) {
             console.log(`User leveled up to Level ${user.profile.level}`);
         }
 
-        // Update user in the database
-        await usersCollection.updateOne(
+        // Ensure we're updating the profile in the correct structure
+        const updateResult = await usersCollection.updateOne(
             { username: username },
-            { $set: { profile: user.profile } }
+            {
+                $set: { 'profile': user.profile }  // Correctly update the profile object
+            }
         );
 
+        // Check if the document was actually updated
+        if (updateResult.matchedCount === 0) {
+            throw new Error('User profile update failed');
+        }
+
+        // Return success message with updated user data
         return {
-            message: `${user.username} slayed ${randomMonster.name} and earned ${points} experience points!`,
-            new_experience: user.profile.experience,
-            level: user.profile.level,
+            message: `${user.username} defeated ${randomMonster.name}!`,
+            user: {
+                level: user.profile.level,
+                experience: user.profile.experience,
+                attributes: user.profile,
+                inventory: user.profile.inventory
+            }
         };
     } catch (error) {
         console.error("Error in slayRandomMonster:", error);
         throw error;
     }
 }
-
-module.exports = {
-    slayRandomMonster,
-    deleteUser
-};
 
 async function deleteUser(client, username) {
     try {

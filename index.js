@@ -386,11 +386,22 @@ app.post('/slay-random-monster', async (req, res) => {
 app.post('/createWeapon', async (req, res) => {
   try {
       const { weapon_id, name, description, damage, type, attributes } = req.body;
+      
+      // Log the request body to debug
+      console.log("Request Body:", req.body);
+
+      // Validate input to prevent empty inserts
+      if (!weapon_id || !name || !description || !damage || !type || !attributes) {
+          return res.status(400).json({ error: "All fields are required" });
+      }
+
+      // Call createItem function with validated inputs
       await createWeapon(client, weapon_id, name, description, damage, type, attributes);
-      res.status(201).send("Weapon created successfully");
+      res.status(201).json({ message: "Weapon created successfully" });
+
   } catch (error) {
-      res.status(400).send(error.message); 
-  }
+      res.status(500).json({ error: error.message });
+    }
 });
 
 // Read Weapon
