@@ -4,6 +4,8 @@ const app = express();
 const port = process.env.PORT || 3001;
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+const cors = require('cors');
 
 // Import functions
 const {
