@@ -6,7 +6,6 @@ const { MongoClient, ServerApiVersion } = require('mongodb');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const rateLimit = require('express-rate-limit');
-const loginAttempts = {};
 const helmet = require('helmet');
 
 // Import functions
@@ -40,13 +39,51 @@ const {
 app.use(express.json());
 app.use(helmet());  // Use helmet to set secure HTTP headers
 
-// Rate Limiting Middleware: Allow max 3 requests per 5 minute per IP
-const limiter = rateLimit({
-  windowMs: 5 * 60 * 1000, // 5 minute
-  max: 3, // limit each IP to 3 requests per windowMs
-  message: 'Too many requests, please try again later.'
+// Individual rate limiting per route
+const loginLimiter = rateLimit({
+  windowMs: 3 * 60 * 1000, // 3 minutes
+  max: 3, // 3 requests per 3 minutes for login
+  message: 'Too many login attempts, please try again later.'
 });
-app.use(limiter);
+
+const createUserLimiter = rateLimit({
+  windowMs: 3 * 60 * 1000, // 3 minutes
+  max: 3, // 3 requests per 3 minutes for user creation
+  message: 'Too many requests to create user, please try again later.'
+});
+
+const updateUserLimiter = rateLimit({
+  windowMs: 3 * 60 * 1000, // 3 minutes
+  max: 3, // 3 requests per 3 minutes for user creation
+  message: 'Too many requests to create user, please try again later.'
+});
+
+const createMonsterLimiter = rateLimit({
+  windowMs: 3 * 60 * 1000, // 3 minutes
+  max: 3, // 3 requests per 3 minutes for user creation
+  message: 'Too many requests to create user, please try again later.'
+});
+
+const updateMonsterLimiter = rateLimit({
+  windowMs: 3 * 60 * 1000, // 3 minutes
+  max: 3, // 3 requests per 3 minutes for user creation
+  message: 'Too many requests to create user, please try again later.'
+});
+
+const slayMonsterLimiter = rateLimit({
+  windowMs: 3 * 60 * 1000, // 3 minutes
+  max: 3, // 3 requests per 3 minutes for slaying monsters
+  message: 'Too many slay requests, please try again later.'
+});
+
+const generateTokenLimiter = rateLimit({
+  windowMs: 3 * 60 * 1000, // 3 minutes
+  max: 3, // 3 requests per 3 minutes for generating tokens
+  message: 'Too many token generation requests, please try again later.'
+});
+
+// Password Policy (minimum 8 characters, one uppercase, one lowercase, one number, one special character)
+const passwordPolicy = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
 // Default route
 app.get('/', (req, res) => {
@@ -69,13 +106,10 @@ async function run() {
     console.error("Error in run function:", error);
   }
 }
-run().catch(console.dir);
-
-// Password Policy (minimum 8 characters, one uppercase, one lowercase, one number, one special character)
-const passwordPolicy = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+run().catch(console.dir());
 
 // Create User
-app.post('/createUser', async (req, res) => {
+app.post('/createUser', createUserLimiter, async (req, res) => {
   try {
     const { username, password, email } = req.body;
 
@@ -85,6 +119,7 @@ app.post('/createUser', async (req, res) => {
     }
 
     // Check password policy
+    const passwordPolicy = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!passwordPolicy.test(password)) {
       return res.status(400).send("Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, one number, and one special character.");
     }
@@ -97,9 +132,15 @@ app.post('/createUser', async (req, res) => {
 });
 
 // Login User
-app.post('/login', async (req, res) => {
+app.post('/login', loginLimiter, async (req, res) => {
   try {
     const { username, password } = req.body;
+
+    // Validate required fields
+    if (!username || !password) {
+      return res.status(400).send("Both username and password are required.");
+    }
+
     const userData = await loginUser(client, username, password);
     res.status(200).json({ message: "Login successful", user: userData });
   } catch (error) {
@@ -108,7 +149,7 @@ app.post('/login', async (req, res) => {
 });
 
 // Route to generate token
-app.post('/generate-token', async (req, res) => {
+app.post('/generate-token', generateTokenLimiter, async (req, res) => {
   try {
     const { username, password } = req.body;
 
@@ -157,7 +198,7 @@ app.get('/getUser/:username', async (req, res) => {
 });
 
 // Update User
-app.put('/updateUser/:username', async (req, res) => {
+app.put('/updateUser/:username', updateUserLimiter, async (req, res) => {
   try {
     const username = req.params.username;
     const { password, email } = req.body;
@@ -225,7 +266,7 @@ app.delete('/deleteUser/:username', async (req, res) => {
 
 // Create Monster
 // Create Monster Route (Protected by token)
-app.post('/createMonster', USER, async (req, res) => {
+app.post('/createMonster', createMonsterLimiter, USER, async (req, res) => {
   try {
     const { monster_id, name, attributes, location } = req.body;
 
@@ -247,10 +288,15 @@ app.post('/createMonster', USER, async (req, res) => {
 });
 
 // Update Monster Route (Protected by token)
-app.put('/updateMonster/:monster_id', USER, async (req, res) => {
+app.put('/updateMonster/:monster_id', updateMonsterLimiter, USER, async (req, res) => {
   try {
     const monsterId = req.params.monster_id;
     const { name, attributes, location } = req.body;
+
+    // Validate required fields
+    if (!name || !attributes || !location) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
 
     const database = client.db('TheDune');
     const collection = database.collection('monster');
@@ -293,33 +339,34 @@ app.delete('/deleteMonster/:monster_id', USER, async (req, res) => {
 // Read Monster
 app.get('/getMonster/:monster_id', async (req, res) => {
   try {
-      const monsterId = req.params.monster_id;
-      const database = client.db('TheDune');
-      const collection = database.collection('monster');
-      const monster = await collection.findOne({ monster_id: monsterId });
+    const monsterId = req.params.monster_id;
+    const database = client.db('TheDune');
+    const collection = database.collection('monster');
+    const monster = await collection.findOne({ monster_id: monsterId });
 
-      if (!monster) {
-          return res.status(404).send("Monster not found");
-      }
+    if (!monster) {
+      return res.status(404).send("Monster not found");
+    }
 
-      res.status(200).json(monster);
+    res.status(200).json(monster);
   } catch (error) {
-      res.status(500).send(error.message);
+    res.status(500).send(error.message);
   }
 });
 
-app.post('/slay-random-monster', async (req, res) => {
+app.post('/slay-random-monster', slayMonsterLimiter, async (req, res) => {
   try {
-      const { username } = req.body;
+    const { username } = req.body;
 
-      if (!username) {
-          return res.status(400).json({ error: 'Username is required' });
-      }
+    // Validate required field
+    if (!username) {
+      return res.status(400).json({ error: 'Username is required' });
+    }
 
-      const result = await slayRandomMonster(client, username);
-      res.status(200).json(result);
+    const result = await slayRandomMonster(client, username);
+    res.status(200).json(result);
   } catch (error) {
-      res.status(500).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 });
 
