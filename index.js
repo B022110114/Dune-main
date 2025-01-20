@@ -88,12 +88,40 @@ app.post('/login', async (req, res) => {
   }
 });
 
-app.get('/generate-token', async (req, res) => {
+// Route to generate token
+app.post('/generate-token', async (req, res) => {
   try {
-    const adminUser = { user_id: 1, role: 'admin' }; // Simulate an admin user
-    const token = await generateToken(adminUser);
-    res.json({ token });
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+      return res.status(400).send('Username and password are required.');
+    }
+
+    // Check if the user exists and is an admin
+    const user = await findUserByUsername(client, username);
+
+    if (!user) {
+      return res.status(404).send('User not found.');
+    }
+
+    // Compare the password with the stored hashed password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      return res.status(401).send('Invalid password.');
+    }
+
+    // Check if the user has an admin role
+    if (user.role !== 'admin') {
+      return res.status(403).send('Access denied: Only admins can generate a token.');
+    }
+
+    // If the user is an admin, generate the token
+    const token = await generateToken(user);
+
+    res.status(200).json({ token });
   } catch (error) {
+    console.error("Error generating token:", error);
     res.status(500).send('Error generating token');
   }
 });
@@ -200,25 +228,70 @@ app.get('/admin-only', ADMIN, (req, res) => {
 */
 
 // Create Monster
-app.post('/createMonster', async (req, res) => {
+// Create Monster Route (Protected by token)
+app.post('/createMonster', USER, async (req, res) => {
   try {
-      const { monster_id, name, attributes, location } = req.body;
+    const { monster_id, name, attributes, location } = req.body;
 
-      // Log the request body to debug
-      console.log("Request Body:", req.body);
+    // Log the request body to debug
+    console.log("Request Body:", req.body);
 
-      // Validate input to prevent empty inserts
-      if (!monster_id || !name || !attributes || !location) {
-          return res.status(400).json({ error: "All fields are required" });
-      }
+    // Validate input to prevent empty inserts
+    if (!monster_id || !name || !attributes || !location) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
 
-      // Call createMonster function with validated inputs
-      await createMonster(client, monster_id, name, attributes, location);
-      res.status(201).json({ message: "Monster created successfully" });
+    // Call createMonster function with validated inputs
+    await createMonster(client, monster_id, name, attributes, location);
+    res.status(201).json({ message: "Monster created successfully" });
 
   } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update Monster Route (Protected by token)
+app.put('/updateMonster/:monster_id', USER, async (req, res) => {
+  try {
+    const monsterId = req.params.monster_id;
+    const { name, attributes, location } = req.body;
+
+    const database = client.db('TheDune');
+    const collection = database.collection('monster');
+
+    const updateResult = await collection.updateOne(
+      { monster_id: monsterId },
+      { $set: { name, attributes, location } }
+    );
+
+    if (updateResult.matchedCount === 0) {
+      return res.status(404).send("Monster not found");
+    }
+
+    res.status(200).send("Monster updated successfully");
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+});
+
+// Delete Monster Route (Protected by token)
+app.delete('/deleteMonster/:monster_id', USER, async (req, res) => {
+  try {
+    const monsterId = req.params.monster_id;
+
+    const database = client.db('TheDune');
+    const collection = database.collection('monster');
+
+    const deleteResult = await collection.deleteOne({ monster_id: monsterId });
+
+    if (deleteResult.deletedCount === 0) {
+      return res.status(404).send("Monster not found");
+    }
+
+    res.status(200).send("Monster deleted successfully");
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
 });
 
 // Read Monster
@@ -234,50 +307,6 @@ app.get('/getMonster/:monster_id', async (req, res) => {
       }
 
       res.status(200).json(monster);
-  } catch (error) {
-      res.status(500).send(error.message);
-  }
-});
-
-// Update Monster
-app.put('/updateMonster/:monster_id', async (req, res) => {
-  try {
-      const monsterId = req.params.monster_id;
-      const { name, attributes, location } = req.body;
-
-      const database = client.db('TheDune');
-      const collection = database.collection('monster');
-
-      const updateResult = await collection.updateOne(
-          { monster_id: monsterId },
-          { $set: { name, attributes, location } }
-      );
-
-      if (updateResult.matchedCount === 0) {
-          return res.status(404).send("Monster not found");
-      }
-
-      res.status(200).send("Monster updated successfully");
-  } catch (error) {
-      res.status(500).send(error.message);
-  }
-});
-
-// Delete Monster
-app.delete('/deleteMonster/:monster_id', async (req, res) => {
-  try {
-      const monsterId = req.params.monster_id;
-      
-      const database = client.db('TheDune');
-      const collection = database.collection('monster');
-      
-      const deleteResult = await collection.deleteOne({ monster_id: monsterId });
-      
-      if (deleteResult.deletedCount === 0) {
-          return res.status(404).send("Monster not found");
-      }
-
-      res.status(200).send("Monster deleted successfully");
   } catch (error) {
       res.status(500).send(error.message);
   }
