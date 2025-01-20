@@ -36,16 +36,9 @@ async function createUser(client, username, password, email, role = "user") {
             email: email,
             role: role,
             registration_date: new Date().toISOString(),
-            profile: {
-                level: 1,
-                experience: 0,
-                attributes: {
-                    strength: 0,
-                    dexterity: 0,
-                    intelligence: 0
-                }
-            },
-            inventory: []
+            // Initialize experience and level fields
+            experience: 0, // Set initial experience to 0
+            level: 1 // Set initial level to 1
         };
 
         await collection.insertOne(user);
@@ -53,34 +46,6 @@ async function createUser(client, username, password, email, role = "user") {
     } catch (error) {
         console.error("Error creating user:", error.message);
         throw error; // Re-throw the error to be handled by the calling function
-    }
-}
-
-async function createItem(client, item_id, name, description, type, attributes, rarity) {
-    try {
-        const database = client.db('TheDune');
-        const collection = database.collection('items');
-
-        // Check if the item already exists
-        const itemExists = await existingItem(client, item_id);
-        if (itemExists) {
-            throw new Error("Item with this ID already exists");
-        }
-
-        const item = {
-            item_id: item_id,
-            name: name,
-            description: description,
-            type: type,
-            attributes: attributes,
-            rarity: rarity
-        };
-
-        await collection.insertOne(item);
-        console.log("Item created successfully");
-    } catch (error) {
-        console.error("Error creating item:", error);
-        throw error;
     }
 }
 
@@ -110,37 +75,7 @@ async function createMonster(client, monster_id, name, attributes, location) {
     }
 }
 
-async function createWeapon(client, weapon_id, name, description, damage, type, attributes) {
-    try {
-        const database = client.db('TheDune');
-        const collection = database.collection('weapons');
-
-        // Check if the weapon already exists
-        const weaponExists = await existingWeapon(client, weapon_id);
-        if (weaponExists) {
-            throw new Error("Weapon with this ID already exists");
-        }
-
-        const weapon = {
-            weapon_id: weapon_id,
-            name: name,
-            description: description,
-            damage: damage,
-            type: type,
-            attributes: attributes
-        };
-
-        await collection.insertOne(weapon);
-        console.log("Weapon created successfully");
-    } catch (error) {
-        console.error("Error creating weapon:", error);
-        throw error;
-    }
-}
-
 module.exports = {
     createUser,
-    createItem,
-    createMonster,
-    createWeapon
+    createMonster
 };

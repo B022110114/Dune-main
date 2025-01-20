@@ -48,21 +48,9 @@ async function slayRandomMonster(client, username) {
             throw new Error('User not found');
         }
 
-        // Make sure the user profile has experience field initialized
-        if (!user.profile) {
-            user.profile = {
-                experience: 0,
-                level: 1,
-                strength: 0,
-                dexterity: 0,
-                intelligence: 0,
-                inventory: []
-            };
-        }
-
-        // Convert experience and level to plain JavaScript numbers if necessary
-        user.profile.experience = Number(user.profile.experience);
-        user.profile.level = Number(user.profile.level);
+        // Ensure experience and level are initialized if not set
+        user.experience = user.experience || 0; // Default to 0 if experience is not set
+        user.level = user.level || 1; // Default to level 1 if level is not set
 
         // Fetch all monsters and select one randomly
         const monsters = await monstersCollection.find({}).toArray();
@@ -84,21 +72,24 @@ async function slayRandomMonster(client, username) {
         const points = rarityPoints[rarity] || 10; // Default to 'common' points if no rarity match
 
         // Add points to user's experience
-        user.profile.experience += points;
+        user.experience += points;
 
         // Check for level-up logic
-        const levelUpThreshold = user.profile.level * 100; // Example: 100 experience points per level
-        if (user.profile.experience >= levelUpThreshold) {
-            user.profile.level += 1;
-            user.profile.experience -= levelUpThreshold; // Carry over remaining experience
-            console.log(`User leveled up to Level ${user.profile.level}`);
+        const levelUpThreshold = user.level * 100; // Example: 100 experience points per level
+        if (user.experience >= levelUpThreshold) {
+            user.level += 1;
+            user.experience -= levelUpThreshold; // Carry over remaining experience
+            console.log(`User leveled up to Level ${user.level}`);
         }
 
-        // Ensure we're updating the profile in the correct structure
+        // Update the user profile with the new experience and level (no attributes or inventory)
         const updateResult = await usersCollection.updateOne(
             { username: username },
             {
-                $set: { 'profile': user.profile }  // Correctly update the profile object
+                $set: { 
+                    experience: user.experience,
+                    level: user.level
+                }
             }
         );
 
@@ -111,10 +102,8 @@ async function slayRandomMonster(client, username) {
         return {
             message: `${user.username} defeated ${randomMonster.name}!`,
             user: {
-                level: user.profile.level,
-                experience: user.profile.experience,
-                attributes: user.profile,
-                inventory: user.profile.inventory
+                level: user.level,
+                experience: user.experience
             }
         };
     } catch (error) {

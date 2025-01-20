@@ -9,9 +9,7 @@ const bcrypt = require('bcrypt');
 // Import functions
 const {
   createUser,
-  createItem,
   createMonster,
-  createWeapon
 } = require('./Functions/CreateFunction');
 
 const {
@@ -20,9 +18,7 @@ const {
 
 const {
   existingUser,
-  existingItem,
   existingMonster,
-  existingWeapon
 } = require('./Functions/ExistingFunction');
 
 const {
@@ -200,94 +196,6 @@ app.get('/admin-only', ADMIN, (req, res) => {
 });
 
 /**
-* --- Items CRUD ---
-*/
-
-// Create Item
-app.post('/createItem', async (req, res) => {
-  try {
-      const { item_id, name, description, type, attributes, rarity } = req.body;
-
-      // Log the request body to debug
-      console.log("Request Body:", req.body);
-
-      // Validate input to prevent empty inserts
-      if (!item_id || !name || !description || !type || !rarity || !attributes) {
-          return res.status(400).json({ error: "All fields are required" });
-      }
-
-      // Call createItem function with validated inputs
-      await createItem(client, item_id, name, description, type, attributes, rarity);
-      res.status(201).json({ message: "Item created successfully" });
-
-  } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-});
-
-// Read Item
-app.get('/getItem/:item_id', async (req, res) => {
-  try {
-      const itemId = req.params.item_id;
-      const database = client.db('TheDune');
-      const collection = database.collection('items');
-      const item = await collection.findOne({ item_id: itemId });
-
-      if (!item) {
-          return res.status(404).send("Item not found");
-      }
-
-      res.status(200).json(item);
-  } catch (error) {
-      res.status(500).send(error.message);
-  }
-});
-
-// Update Item
-app.put('/updateItem/:item_id', async (req, res) => {
-  try {
-      const itemId = req.params.item_id;
-      const { name, description, type, attributes, rarity } = req.body;
-
-      const database = client.db('TheDune');
-      const collection = database.collection('items');
-
-      const updateResult = await collection.updateOne(
-          { item_id: itemId },
-          { $set: { name, description, type, attributes, rarity } }
-      );
-
-      if (updateResult.matchedCount === 0) {
-          return res.status(404).send("Item not found");
-      }
-
-      res.status(200).send("Item updated successfully");
-  } catch (error) {
-      res.status(500).send(error.message);
-  }
-});
-
-// Delete Item
-app.delete('/deleteItem/:item_id', async (req, res) => {
-  try {
-      const itemId = req.params.item_id;
-      
-      const database = client.db('TheDune');
-      const collection = database.collection('items');
-      
-      const deleteResult = await collection.deleteOne({ item_id: itemId });
-      
-      if (deleteResult.deletedCount === 0) {
-          return res.status(404).send("Item not found");
-      }
-
-      res.status(200).send("Item deleted successfully");
-  } catch (error) {
-      res.status(500).send(error.message);
-  }
-});
-
-/**
 * --- Monsters CRUD ---
 */
 
@@ -387,94 +295,6 @@ app.post('/slay-random-monster', async (req, res) => {
       res.status(200).json(result);
   } catch (error) {
       res.status(500).json({ error: error.message });
-  }
-});
-
-/**
-* --- Weapons CRUD ---
-*/
-
-// Create Weapon
-app.post('/createWeapon', async (req, res) => {
-  try {
-      const { weapon_id, name, description, damage, type, attributes } = req.body;
-      
-      // Log the request body to debug
-      console.log("Request Body:", req.body);
-
-      // Validate input to prevent empty inserts
-      if (!weapon_id || !name || !description || !damage || !type || !attributes) {
-          return res.status(400).json({ error: "All fields are required" });
-      }
-
-      // Call createItem function with validated inputs
-      await createWeapon(client, weapon_id, name, description, damage, type, attributes);
-      res.status(201).json({ message: "Weapon created successfully" });
-
-  } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-});
-
-// Read Weapon
-app.get('/getWeapon/:weapon_id', async (req, res) => {
-  try {
-      const weaponId = req.params.weapon_id;
-      const database = client.db('TheDune');
-      const collection = database.collection('weapons');
-      const weapon = await collection.findOne({ weapon_id: weaponId });
-
-      if (!weapon) {
-          return res.status(404).send("Weapon not found");
-      }
-
-      res.status(200).json(weapon);
-  } catch (error) {
-      res.status(500).send(error.message);
-  }
-});
-
-// Update Weapon
-app.put('/updateWeapon/:weapon_id', async (req, res) => {
-  try {
-      const weaponId = req.params.weapon_id;
-      const { name, description, damage, type, attributes } = req.body;
-
-      const database = client.db('TheDune');
-      const collection = database.collection('weapons');
-
-      const updateResult = await collection.updateOne(
-          { weapon_id: weaponId },
-          { $set: { name, description, damage, type, attributes } }
-      );
-
-      if (updateResult.matchedCount === 0) {
-          return res.status(404).send("Weapon not found");
-      }
-
-      res.status(200).send("Weapon updated successfully");
-  } catch (error) {
-      res.status(500).send(error.message);
-  }
-});
-
-// Delete Weapon
-app.delete('/deleteWeapon/:weapon_id', async (req, res) => {
-  try {
-      const weaponId = req.params.weapon_id;
-      
-      const database = client.db('TheDune');
-      const collection = database.collection('weapons');
-      
-      const deleteResult = await collection.deleteOne({ weapon_id: weaponId });
-      
-      if (deleteResult.deletedCount === 0) {
-          return res.status(404).send("Weapon not found");
-      }
-
-      res.status(200).send("Weapon deleted successfully");
-  } catch (error) {
-      res.status(500).send(error.message);
   }
 });
 
